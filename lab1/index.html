@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8/>
+<title>Lab 1. Introduction to HTML5 and HLS</title>
+  <link href="https://unpkg.com/video.js/dist/video-js.css"
+  rel="stylesheet">
+</head>
+
+<body>
+  <h1 align="center">Vilius HLS Player</h1>
+  <video-js id="v_01" width="640" height="268">
+  <source src="https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8" type="application/x-mpegURL">
+  <source src="https://d2zihajmogu5jn.cloudfront.net/bipbop-advanced/bipbop_16x9_variant.m3u8" type="application/x-mpegURL">
+  </video-js>
+        <button onclick="play()">Play</button>
+        <button onclick="pause()">Pause</button>
+        <button onclick="stop()">Stop</button>
+        <button onclick="JumpForwards()">Jump to 5 sec forward</button>
+        <button onclick="JumpBackwards()">Jump to 5 sec backwards</button>
+  <script src="https://unpkg.com/video.js/dist/video.js"></script>
+  <script type='text/javascript' src='js/control.js'></script>
+  <script src="https://unpkg.com/@videojs/http-streaming/dist/videojs-http-streaming.js"></script>
+  </script>
+</body>
+</html>
