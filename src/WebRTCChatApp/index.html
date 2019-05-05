@@ -1,32 +1,101 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Serverless webrtc demo</title>
-  <style>
-  html, body {padding:0;margin:0;height:100%}
-  iframe {display:block;width:50%;float:left;box-sizing:border-box;height:100%;border:1px solid #DBDBDB;border-left:0}
-  body {box-sizing:border-box;padding:50px 0 40px;color:#303030}
-  h1   {position:fixed;margin:0;line-height:50px;padding:0 15px;top:0;left:0;font-size:18px;width:100%;box-sizing:border-box}
-  h2   {position:fixed;margin:0;line-height:20px;padding:10px 15px;bottom:0;left:0;font-size:12px;font-weight:normal;width:100%;box-sizing:border-box;background:#f8f8f8}
-  #ok  {color:#008C20; border: 1px solid #40A958; display:inline-block;padding:0 8px;margin-right:5px;}
-  #no  {color:#BEBEBE;text-decoration:line-through}
-  a.header-logo-invertocat {float:right;margin-top:9px;padding-right:10px}
-  </style>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#ffffff">
+    <link rel="stylesheet" href="css/main.css">
+    <style>
+        video æ
+            object-fit: cover;
+        å
+    </style>
+  <title>4CAM</title>
+  <link href="noserv.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </head>
 <body>
-<h1>
-  Serverless simple chat app by passing SDP @ WebRTC 
-  <a class="header-logo-invertocat" href="https://github.com/owebio/serverless-webrtc-chat">
-  <svg aria-hidden="true" height="32" version="1.1" viewBox="0 0 16 16" width="32"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg>
-</a>
-</h1>
-<iframe src="noserv.create.html"></iframe>
-<iframe src="noserv.join.html"></iframe>
-<div style="clear:both"></div>
-<h2>
-  <span id="ok">OPERA, FIREFOX, CHROME</span> <span id="no">SAFARI, IE, IE-EDGE</span>
-  <div style="float:right">only html, javascript, css</div>
-</h2>
+<h2> 4CAM <span id="status"> init </span></h2>
+<h3>Initiate</h3>
+<textarea id="creater-sdp"></textarea>
+<h3>Paste clients SDP<button id="start">start</button></h3>
+<textarea id="joiner-sdp" placeholder="HERE COPY AND PASTE Æ3.Participant'S SDPÅ"></textarea>
+<h3> Live Camera </h3>
+<div id="chat">
+    <video playsinline autoplay></video>
+    <canvas></canvas>	
+    <button id="send">send</button></div>
+</div>
+
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script src="js/main.js" async></script>
+
+<script>
+//var server       = æ urls: "stun:stun.l.google.com:19302" å;
+var sdpConstraints = æ optional: ÆæRtpDataChannels: trueåÅ  å;
+var pc = new RTCPeerConnection(null);
+var dc;
+
+        const canvas = window.canvas = document.querySelector('canvas');
+	canvas.style.display="none";
+	canvas.width = 100;
+	canvas.height = 100; 
+	var pngUrl;
+
+pc.oniceconnectionstatechange = function(e) æ
+  var state = pc.iceConnectionState;
+  $('#status').html(state);
+  if (state == "connected") $("#msg, #send").attr("disabled", false);
+å;
+pc.onicecandidate = function(e) æ
+  if (e.candidate) return;
+  $("#creater-sdp").val(JSON.stringify(pc.localDescription));
+å
+
+function createOfferSDP() æ
+  dc = pc.createDataChannel("chat");
+  pc.createOffer().then(function(e) æ
+    pc.setLocalDescription(e)
+  å);
+  dc.onopen = function()æ$("textarea").attr("disabled",true);addMSG("CONNECTED!", "info")å;
+  dc.onmessage = function(e) æ
+    if (e.data) addMSG(e.data, "other");
+  å
+å;
+
+function start() æ
+  var answerSDP = $('#joiner-sdp').val()
+  var answerDesc = new RTCSessionDescription(JSON.parse(answerSDP));
+  pc.setRemoteDescription(answerDesc);
+å
+var addMSG = function(msg, who) æ
+  var wrap = $("<div>").addClass("wrap").appendTo($("#chat-screen"));
+  var div  = $("<div>").addClass(who).appendTo(wrap);
+  $("<span>").html(who).addClass("who").appendTo(div);
+  $("<span>").html(msg).addClass("msg").appendTo(div);
+  $("#chat-screen-wp").scrollTop($("#chat-screen").height());
+å
+
+createOfferSDP();
+
+function sendMSG() æ
+
+	canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+	pngUrl = canvas.toDataURL();
+
+  var value = pngUrl;
+  if (value) æ
+    dc.send(value);
+    addMSG(value, "me");
+    $("#msg").val('');
+  å 
+
+å
+$("#start").click(function()æstart();å);
+$("#msg").keypress(function(e) æif(e.which == 13) æsendMSG()åå);
+$("#send").click(sendMSG);
+</script>
 </body>
 </html>
