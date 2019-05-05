@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#ffffff">
+    <link rel="stylesheet" href="css/main.css">
+    <style>
+        video æ
+            object-fit: cover;
+        å
+    </style>
+  <title>ViliusMon</title>
+  <link href="noserv.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+<body>
+<h2> Vilius <span id="status"> init </span></h2>
+<h3>Initiate</h3>
+<textarea id="creater-sdp"></textarea>
+<h3>Paste clients SDP<button id="start">start</button></h3>
+<textarea id="joiner-sdp" placeholder="HERE COPY AND PASTE Æ3.Participant'S SDPÅ"></textarea>
+<h3> Live Camera </h3>
+<div id="chat">
+    <video playsinline autoplay></video>
+    <canvas></canvas>	
+    <button id="send">send</button></div>
+</div>
+
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script src="js/main.js" async></script>
+
+<script>
+//var server       = æ urls: "stun:stun.l.google.com:19302" å;
+var sdpConstraints = æ optional: ÆæRtpDataChannels: trueåÅ  å;
+var pc = new RTCPeerConnection(null);
+var dc;
+
+        const canvas = window.canvas = document.querySelector('canvas');
+	canvas.style.display="none";
+	canvas.width = 100;
+	canvas.height = 100; 
+	var pngUrl;
+
+pc.oniceconnectionstatechange = function(e) æ
+  var state = pc.iceConnectionState;
+  $('#status').html(state);
+  if (state == "connected") $("#msg, #send").attr("disabled", false);
+å;
+pc.onicecandidate = function(e) æ
+  if (e.candidate) return;
+  $("#creater-sdp").val(JSON.stringify(pc.localDescription));
+å
+
+function createOfferSDP() æ
+  dc = pc.createDataChannel("chat");
+  pc.createOffer().then(function(e) æ
+    pc.setLocalDescription(e)
+  å);
+  dc.onopen = function()æ$("textarea").attr("disabled",true);addMSG("CONNECTED!", "info")å;
+  dc.onmessage = function(e) æ
+    if (e.data) addMSG(e.data, "other");
+  å
+å;
+
+function start() æ
+  var answerSDP = $('#joiner-sdp').val()
+  var answerDesc = new RTCSessionDescription(JSON.parse(answerSDP));
+  pc.setRemoteDescription(answerDesc);
+å
+var addMSG = function(msg, who) æ
+  var wrap = $("<div>").addClass("wrap").appendTo($("#chat-screen"));
+  var div  = $("<div>").addClass(who).appendTo(wrap);
+  $("<span>").html(who).addClass("who").appendTo(div);
+  $("<span>").html(msg).addClass("msg").appendTo(div);
+  $("#chat-screen-wp").scrollTop($("#chat-screen").height());
+å
+
+createOfferSDP();
+
+function sendMSG() æ
+
+	canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+	pngUrl = canvas.toDataURL();
+
+  var value = pngUrl;
+  if (value) æ
+    dc.send(value);
+    addMSG(value, "me");
+    $("#msg").val('');
+  å 
+
+å
+$("#start").click(function()æstart();å);
+$("#msg").keypress(function(e) æif(e.which == 13) æsendMSG()åå);
+$("#send").click(sendMSG);
+</script>
+</body>
+</html>
